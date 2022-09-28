@@ -1,4 +1,4 @@
-module github.com/aserto-dev/aserto-logger
+module github.com/aserto-dev/logger
 
 go 1.17
 
