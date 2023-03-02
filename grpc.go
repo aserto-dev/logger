@@ -8,13 +8,15 @@ import (
 
 // GRPCZeroLogger is a GRPC logger that uses zerolog
 type GRPCZeroLogger struct {
-	log *zerolog.Logger
+	log   *zerolog.Logger
+	level zerolog.Level
 }
 
 // NewGRPCZeroLogger creates a GRPCZeroLogger
-func NewGRPCZeroLogger(log *zerolog.Logger) GRPCZeroLogger {
-	grpcLogger := log.With().Str("log-source", "grpc").Logger()
-	return GRPCZeroLogger{log: &grpcLogger}
+func NewGRPCZeroLogger(log *zerolog.Logger, level zerolog.Level) GRPCZeroLogger {
+	log.Debug().Msgf("GRPC log level is: %s", level.String())
+	grpcLogger := log.Level(level).With().Str("log-source", "grpc").Logger()
+	return GRPCZeroLogger{log: &grpcLogger, level: level}
 }
 
 // Fatal logs a fatal message
