@@ -75,12 +75,13 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 		logrus.SetOutput(io.Discard)
 
 		// Override GRPC logging with zerolog
-		if cfg.GrpcLogLevel == "" {
-			grpclog.SetLoggerV2(NewGRPCZeroLogger(&logger, zerolog.WarnLevel))
-		} else {
-			grpcLogLevel, _ := zerolog.ParseLevel(cfg.GrpcLogLevel)
-			grpclog.SetLoggerV2(NewGRPCZeroLogger(&logger, grpcLogLevel))
+		grpcLevel := zerolog.WarnLevel
+		if cfg.GrpcLogLevel != "" {
+			if level, err := zerolog.ParseLevel(cfg.GrpcLogLevel); err == nil {
+				grpcLevel = level
+			}
 		}
+		grpclog.SetLoggerV2(NewGRPCZeroLogger(&logger, grpcLevel))
 
 		zerolog.ErrorHandler = func(err error) {
 			if !strings.Contains(err.Error(), "file already closed") {
