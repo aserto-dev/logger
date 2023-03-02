@@ -8,73 +8,99 @@ import (
 
 // GRPCZeroLogger is a GRPC logger that uses zerolog
 type GRPCZeroLogger struct {
-	log *zerolog.Logger
+	log   *zerolog.Logger
+	level zerolog.Level
 }
 
 // NewGRPCZeroLogger creates a GRPCZeroLogger
-func NewGRPCZeroLogger(log *zerolog.Logger) GRPCZeroLogger {
+func NewGRPCZeroLogger(log *zerolog.Logger, level zerolog.Level) GRPCZeroLogger {
+	log.Debug().Msgf("GRPC log level is: %s", level.String())
 	grpcLogger := log.With().Str("log-source", "grpc").Logger()
-	return GRPCZeroLogger{log: &grpcLogger}
+	return GRPCZeroLogger{log: &grpcLogger, level: level}
 }
 
 // Fatal logs a fatal message
 func (l GRPCZeroLogger) Fatal(args ...interface{}) {
-	l.log.Fatal().Msg(fmt.Sprint(args...))
+	if l.level <= zerolog.FatalLevel {
+		l.log.Fatal().Msg(fmt.Sprint(args...))
+	}
 }
 
 // Fatalf formats and logs a fatal message
 func (l GRPCZeroLogger) Fatalf(format string, args ...interface{}) {
-	l.log.Fatal().Msg(fmt.Sprintf(format, args...))
+	if l.level <= zerolog.FatalLevel {
+		l.log.Fatal().Msg(fmt.Sprintf(format, args...))
+	}
 }
 
 // Fatalln logs a fatal message and a newline
 func (l GRPCZeroLogger) Fatalln(args ...interface{}) {
-	l.Fatal(args...)
+	if l.level <= zerolog.FatalLevel {
+		l.Fatal(args...)
+	}
 }
 
 // Error logs an error message
 func (l GRPCZeroLogger) Error(args ...interface{}) {
-	l.log.Error().Msg(fmt.Sprint(args...))
+	if l.level <= zerolog.ErrorLevel {
+		l.log.Error().Msg(fmt.Sprint(args...))
+	}
 }
 
 // Errorf formats and logs an error message
 func (l GRPCZeroLogger) Errorf(format string, args ...interface{}) {
-	l.log.Error().Msg(fmt.Sprintf(format, args...))
+	if l.level <= zerolog.ErrorLevel {
+		l.log.Error().Msg(fmt.Sprintf(format, args...))
+	}
 }
 
 // Errorln logs an error message and a newline
 func (l GRPCZeroLogger) Errorln(args ...interface{}) {
-	l.Error(args...)
+	if l.level <= zerolog.ErrorLevel {
+		l.Error(args...)
+	}
 }
 
 // Info logs an info message
 func (l GRPCZeroLogger) Info(args ...interface{}) {
-	l.log.Info().Msg(fmt.Sprint(args...))
+	if l.level <= zerolog.InfoLevel {
+		l.log.Info().Msg(fmt.Sprint(args...))
+	}
 }
 
 // Infof formats and logs an info message
 func (l GRPCZeroLogger) Infof(format string, args ...interface{}) {
-	l.log.Info().Msg(fmt.Sprintf(format, args...))
+	if l.level <= zerolog.InfoLevel {
+		l.log.Info().Msg(fmt.Sprintf(format, args...))
+	}
 }
 
 // Infoln formats and logs an info message and a newline
 func (l GRPCZeroLogger) Infoln(args ...interface{}) {
-	l.Info(args...)
+	if l.level <= zerolog.InfoLevel {
+		l.Info(args...)
+	}
 }
 
 // Warning logs a warning message
 func (l GRPCZeroLogger) Warning(args ...interface{}) {
-	l.log.Warn().Msg(fmt.Sprint(args...))
+	if l.level <= zerolog.WarnLevel {
+		l.log.Warn().Msg(fmt.Sprint(args...))
+	}
 }
 
 // Warningf formats and logs a warning message
 func (l GRPCZeroLogger) Warningf(format string, args ...interface{}) {
-	l.log.Warn().Msg(fmt.Sprintf(format, args...))
+	if l.level <= zerolog.WarnLevel {
+		l.log.Warn().Msg(fmt.Sprintf(format, args...))
+	}
 }
 
 // Warningln formats and logs a warning message and a newline
 func (l GRPCZeroLogger) Warningln(args ...interface{}) {
-	l.Warning(args...)
+	if l.level <= zerolog.WarnLevel {
+		l.Warning(args...)
+	}
 }
 
 // Print prints a message

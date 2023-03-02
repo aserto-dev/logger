@@ -25,6 +25,7 @@ type Config struct {
 	Prod           bool          `json:"prod"`
 	LogLevelParsed zerolog.Level `json:"-"`
 	LogLevel       string        `json:"log_level"`
+	GrpcLogLevel   string        `json:"grpc_log_level"`
 }
 
 // ParseLogLevel parses the log level in the config and
@@ -74,7 +75,11 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 		logrus.SetOutput(io.Discard)
 
 		// Override GRPC logging with zerolog
-		grpclog.SetLoggerV2(NewGRPCZeroLogger(&logger))
+		grpcLogLevel, err := zerolog.ParseLevel(cfg.GrpcLogLevel)
+		if err != nil {
+			grpcLogLevel = zerolog.WarnLevel
+		}
+		grpclog.SetLoggerV2(NewGRPCZeroLogger(&logger, grpcLogLevel))
 
 		zerolog.ErrorHandler = func(err error) {
 			if !strings.Contains(err.Error(), "file already closed") {
