@@ -20,7 +20,7 @@ type Writer io.Writer
 
 var once = &sync.Once{}
 
-// Config represents logging configuration
+// Config represents logging configuration.
 type Config struct {
 	Prod           bool          `json:"prod"`
 	LogLevelParsed zerolog.Level `json:"-"`
@@ -45,7 +45,7 @@ func (c *Config) ParseLogLevel(defaultLevel zerolog.Level) error {
 	return nil
 }
 
-// NewLogger returns a new logger
+// NewLogger returns a new logger.
 func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.Logger, error) {
 	var logger zerolog.Logger
 	if cfg.Prod {
@@ -64,17 +64,17 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 		zerolog.SetGlobalLevel(cfg.LogLevelParsed)
 		zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
-		// Override standard log output with zerolog
+		// Override standard log output with zerolog.
 		stdLogger := logger.With().Str("log-source", "std").Logger()
 		log.SetOutput(NewZerologWriter(&stdLogger))
 
-		// Override logrus with zerolog
+		// Override logrus with zerolog.
 		logrusLogger := logger.With().Str("log-source", "logrus").Logger()
 		logrus.AddHook(&logrusHook{logger: &logrusLogger, writer: logOutput})
 		logrus.SetLevel(logrus.TraceLevel)
 		logrus.SetOutput(io.Discard)
 
-		// Override GRPC logging with zerolog
+		// Override GRPC logging with zerolog.
 		grpcLevel := zerolog.WarnLevel
 		if cfg.GrpcLogLevel != "" {
 			if level, err := zerolog.ParseLevel(cfg.GrpcLogLevel); err == nil {

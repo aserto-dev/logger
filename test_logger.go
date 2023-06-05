@@ -7,7 +7,7 @@ import (
 )
 
 // TestLogger creates a logger useful for unit tests
-// it has a trace level
+// it has a trace level.
 func TestLogger(logOutput io.Writer) *zerolog.Logger {
 	cfg := Config{}
 	cfg.LogLevel = "trace"

@@ -7,13 +7,13 @@ import (
 	"github.com/sirupsen/logrus" // nolint // we're only using logrus to make sure any packages using it still end up to zerolog
 )
 
-// logrusHook is a logrus hook that writes to zerolog
+// logrusHook is a logrus hook that writes to zerolog.
 type logrusHook struct {
 	logger *zerolog.Logger
 	writer io.Writer
 }
 
-// Fire will be called when some logging function is called
+// Fire will be called when some logging function is called.
 func (hook *logrusHook) Fire(entry *logrus.Entry) error {
 	switch entry.Level {
 	case logrus.PanicLevel:
@@ -35,7 +35,7 @@ func (hook *logrusHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
-// Levels defines on which log levels this hook would trigger
+// Levels defines on which log levels this hook would trigger.
 func (hook *logrusHook) Levels() []logrus.Level {
 	return []logrus.Level{
 		logrus.PanicLevel,

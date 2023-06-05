@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// ZerologWriter implements io.Writer for a zerolog logger
+// ZerologWriter implements io.Writer for a zerolog logger.
 type ZerologWriter struct {
 	logger *zerolog.Logger
 	level  zerolog.Level
@@ -15,7 +15,7 @@ type ZerologWriter struct {
 
 var stdLocker = &sync.Mutex{}
 
-// NewZerologWriter creates a new ZerologWriter
+// NewZerologWriter creates a new ZerologWriter.
 func NewZerologWriter(logger *zerolog.Logger) *ZerologWriter {
 	return NewZerologWriterWithLevel(logger, zerolog.InfoLevel)
 }
@@ -30,7 +30,7 @@ func (z *ZerologWriter) Write(p []byte) (n int, err error) {
 	stdLocker.Lock()
 	defer stdLocker.Unlock()
 
-	switch z.level {
+	switch z.level { //nolint:exhaustive
 	case zerolog.InfoLevel:
 		z.logger.Info().Msg(msg)
 	case zerolog.DebugLevel:
@@ -48,7 +48,7 @@ func (z *ZerologWriter) Write(p []byte) (n int, err error) {
 }
 
 // NewSTDLogger creates a standard logger that writes to
-// a zerolog logger
+// a zerolog logger.
 func NewSTDLogger(logger *zerolog.Logger) *log.Logger {
 	return log.New(NewZerologWriter(logger), "", 0)
 }
