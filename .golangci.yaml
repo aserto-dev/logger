@@ -73,7 +73,6 @@ linters:
   enable:
     - asciicheck
     - bodyclose
-    - depguard
     - dogsled
     - errcheck
     - exportloopref
@@ -95,7 +94,7 @@ linters:
     - misspell
     - nakedret
     - noctx
-    # - rowserrcheck https://github.com/golangci/golangci-lint/issues/2649. 
+    - rowserrcheck
     - staticcheck
     - stylecheck
     - testpackage
@@ -105,6 +104,7 @@ linters:
     - unused
 
   # don't enable:
+    # - depguard
     # - dupl
     # - gochecknoglobals
     # - gocognit
@@ -153,8 +153,10 @@ issues:
     - text: "G404"
       linters:
       - gosec
+    - text: "SA1019"
+      linters:
+      - staticcheck
 
 run:
-  timeout: 5m
   skip-dirs:
   - pkg/testharness/testdata
