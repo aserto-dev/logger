@@ -10,8 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/pkgerrors"
-	"github.com/sirupsen/logrus" //nolint
+	"github.com/rs/zerolog/pkgerrors" //nolint
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -67,12 +66,6 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 		// Override standard log output with zerolog.
 		stdLogger := logger.With().Str("log-source", "std").Logger()
 		log.SetOutput(NewZerologWriter(&stdLogger))
-
-		// Override logrus with zerolog.
-		logrusLogger := logger.With().Str("log-source", "logrus").Logger()
-		logrus.AddHook(&logrusHook{logger: &logrusLogger, writer: logOutput})
-		logrus.SetLevel(logrus.TraceLevel)
-		logrus.SetOutput(io.Discard)
 
 		// Override GRPC logging with zerolog.
 		grpcLevel := zerolog.WarnLevel

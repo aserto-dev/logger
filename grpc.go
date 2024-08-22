@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog"
+	"google.golang.org/grpc/grpclog"
 )
 
 // GRPCZeroLogger is a GRPC logger that uses zerolog.
@@ -11,6 +12,8 @@ type GRPCZeroLogger struct {
 	log   *zerolog.Logger
 	level zerolog.Level
 }
+
+var _ grpclog.LoggerV2 = GRPCZeroLogger{}
 
 // NewGRPCZeroLogger creates a GRPCZeroLogger.
 func NewGRPCZeroLogger(log *zerolog.Logger, level zerolog.Level) GRPCZeroLogger {
