@@ -10,9 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/pkgerrors"
-	"github.com/sirupsen/logrus" //nolint
-	"google.golang.org/grpc/grpclog"
+	"github.com/rs/zerolog/pkgerrors" //nolint
 )
 
 type ErrWriter io.Writer
@@ -68,12 +66,6 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 		stdLogger := logger.With().Str("log-source", "std").Logger()
 		log.SetOutput(NewZerologWriter(&stdLogger))
 
-		// Override logrus with zerolog.
-		logrusLogger := logger.With().Str("log-source", "logrus").Logger()
-		logrus.AddHook(&logrusHook{logger: &logrusLogger, writer: logOutput})
-		logrus.SetLevel(logrus.TraceLevel)
-		logrus.SetOutput(io.Discard)
-
 		// Override GRPC logging with zerolog.
 		grpcLevel := zerolog.WarnLevel
 		if cfg.GrpcLogLevel != "" {
@@ -81,7 +73,8 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 				grpcLevel = level
 			}
 		}
-		grpclog.SetLoggerV2(NewGRPCZeroLogger(&logger, grpcLevel))
+
+		SetGRPCLogger(&logger, grpcLevel)
 
 		zerolog.ErrorHandler = func(err error) {
 			if !strings.Contains(err.Error(), "file already closed") {
