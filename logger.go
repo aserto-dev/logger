@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors" //nolint
-	"google.golang.org/grpc/grpclog"
 )
 
 type ErrWriter io.Writer
@@ -74,7 +73,8 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 				grpcLevel = level
 			}
 		}
-		grpclog.SetLoggerV2(NewGRPCZeroLogger(&logger, grpcLevel))
+
+		SetGRPCLogger(&logger, grpcLevel)
 
 		zerolog.ErrorHandler = func(err error) {
 			if !strings.Contains(err.Error(), "file already closed") {

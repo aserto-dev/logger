@@ -15,6 +15,10 @@ type GRPCZeroLogger struct {
 
 var _ grpclog.LoggerV2 = GRPCZeroLogger{}
 
+func SetGRPCLogger(log *zerolog.Logger, level zerolog.Level) {
+	grpclog.SetLoggerV2(NewGRPCZeroLogger(log, level))
+}
+
 // NewGRPCZeroLogger creates a GRPCZeroLogger.
 func NewGRPCZeroLogger(log *zerolog.Logger, level zerolog.Level) GRPCZeroLogger {
 	log.Debug().Msgf("GRPC log level is: %s", level.String())
