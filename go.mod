@@ -1,6 +1,8 @@
 module github.com/aserto-dev/logger
 
-go 1.21
+go 1.22.11
+
+toolchain go1.23.5
 
 require (
 	github.com/pkg/errors v0.9.1
