@@ -9,9 +9,11 @@ import (
 // TestLogger creates a logger useful for unit tests
 // it has a trace level.
 func TestLogger(logOutput io.Writer) *zerolog.Logger {
-	cfg := Config{}
-	cfg.LogLevel = "trace"
-	cfg.LogLevelParsed = zerolog.TraceLevel
+	cfg := Config{
+		LogLevel:       "trace",
+		LogLevelParsed: zerolog.TraceLevel,
+		Prod:           true,
+	}
 
 	logger, err := NewLogger(logOutput, logOutput, &cfg)
 	if err != nil {
