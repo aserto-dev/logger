@@ -8,53 +8,28 @@ ATTN_COLOR         := \033[33;01m
 
 GOOS               := $(shell go env GOOS)
 GOARCH             := $(shell go env GOARCH)
-GOPRIVATE          := "github.com/aserto-dev"
 DOCKER_BUILDKIT    := 1
 
 EXT_DIR            := ./.ext
 EXT_BIN_DIR        := ${EXT_DIR}/bin
 EXT_TMP_DIR        := ${EXT_DIR}/tmp
 
-VAULT_VER	         := 1.8.12
-SVU_VER 	         := 1.12.0
-GOTESTSUM_VER      := 1.11.0
-GOLANGCI-LINT_VER  := 1.61.0
-GORELEASER_VER     := 2.3.2
-WIRE_VER	         := 0.6.0
-BUF_VER            := 1.34.0
+SVU_VER            := 3.2.3
+GOTESTSUM_VER      := 1.12.1
+GOLANGCI-LINT_VER  := 2.0.2
 
-RELEASE_TAG        := $$(svu)
+RELEASE_TAG		:= $$(${EXT_BIN_DIR}/svu current)
 
 .DEFAULT_GOAL      := build
 
 .PHONY: deps
-deps: info install-vault install-svu install-goreleaser install-golangci-lint install-gotestsum
+deps: info install-svu install-golangci-lint install-gotestsum
 	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
 
 .PHONY: build
 build:
 	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
 	@${EXT_BIN_DIR}/goreleaser build --clean --snapshot --single-target
-
-.PHONY: dev-release
-dev-release: 
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@${EXT_BIN_DIR}/goreleaser release --clean --snapshot
-
-.PHONY: release
-release:
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@${EXT_BIN_DIR}/goreleaser release --clean
-
-.PHONY: snapshot
-snapshot:
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@${EXT_BIN_DIR}/goreleaser release --clean --snapshot
-
-.PHONY: generate
-generate:
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@GOBIN=${PWD}/${EXT_BIN_DIR} go generate ./...
 
 .PHONY: lint
 lint:
@@ -66,16 +41,6 @@ test:
 	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
 	@${EXT_BIN_DIR}/gotestsum --format short-verbose -- -count=1 -parallel=1 -v -coverprofile=cover.out -coverpkg=./... ./...;
 
-.PHONY: write-version
-write-version:
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@git describe --tags > ./VERSION.txt
-
-.PHONY: vault-login
-vault-login:
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@vault login -method=github token=$$(gh auth token)
-
 .PHONY: info
 info:
 	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
@@ -86,32 +51,13 @@ info:
 	@echo "EXT_TMP_DIR: ${EXT_TMP_DIR}"
 	@echo "RELEASE_TAG: ${RELEASE_TAG}"
 
-.PHONY: install-vault
-install-vault: ${EXT_BIN_DIR} ${EXT_TMP_DIR}
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@curl -s -o ${EXT_TMP_DIR}/vault.zip https://releases.hashicorp.com/vault/${VAULT_VER}/vault_${VAULT_VER}_${GOOS}_${GOARCH}.zip
-	@unzip -o ${EXT_TMP_DIR}/vault.zip vault -d ${EXT_BIN_DIR}/  &> /dev/null
-	@chmod +x ${EXT_BIN_DIR}/vault
-	@${EXT_BIN_DIR}/vault --version 
-
-
 .PHONY: install-svu
-install-svu: install-svu-${GOOS}
+install-svu: ${EXT_BIN_DIR} ${EXT_TMP_DIR}
 	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
+	@gh release download v${SVU_VER} --repo https://github.com/caarlos0/svu --pattern "*${GOOS}_all.tar.gz" --output "${EXT_TMP_DIR}/svu.tar.gz" --clobber
+	@tar -xvf ${EXT_TMP_DIR}/svu.tar.gz --directory ${EXT_BIN_DIR} svu &> /dev/null
 	@chmod +x ${EXT_BIN_DIR}/svu
 	@${EXT_BIN_DIR}/svu --version
-
-.PHONY: install-svu-darwin
-install-svu-darwin: ${EXT_TMP_DIR} ${EXT_BIN_DIR}
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@gh release download --repo https://github.com/caarlos0/svu --pattern "svu_*_darwin_all.tar.gz" --output "${EXT_TMP_DIR}/svu.tar.gz" --clobber
-	@tar -xvf ${EXT_TMP_DIR}/svu.tar.gz --directory ${EXT_BIN_DIR} svu &> /dev/null
-
-.PHONY: install-svu-linux
-install-svu-linux: ${EXT_TMP_DIR} ${EXT_BIN_DIR}
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@gh release download --repo https://github.com/caarlos0/svu --pattern "svu_*_linux_${GOARCH}.tar.gz" --output "${EXT_TMP_DIR}/svu.tar.gz" --clobber
-	@tar -xvf ${EXT_TMP_DIR}/svu.tar.gz --directory ${EXT_BIN_DIR} svu &> /dev/null
 
 .PHONY: install-gotestsum
 install-gotestsum: ${EXT_TMP_DIR} ${EXT_BIN_DIR}
@@ -130,21 +76,11 @@ install-golangci-lint: ${EXT_TMP_DIR} ${EXT_BIN_DIR}
 	@chmod +x ${EXT_BIN_DIR}/golangci-lint
 	@${EXT_BIN_DIR}/golangci-lint --version
 
-.PHONY: install-goreleaser
-install-goreleaser: ${EXT_TMP_DIR} ${EXT_BIN_DIR}
-	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
-	@gh release download v${GORELEASER_VER} --repo https://github.com/goreleaser/goreleaser --pattern "goreleaser_$$(uname -s)_$$(uname -m).tar.gz" --output "${EXT_TMP_DIR}/goreleaser.tar.gz" --clobber
-	@tar -xvf ${EXT_TMP_DIR}/goreleaser.tar.gz --directory ${EXT_BIN_DIR} goreleaser &> /dev/null
-	@chmod +x ${EXT_BIN_DIR}/goreleaser
-	@${EXT_BIN_DIR}/goreleaser --version
-
-
 .PHONY: clean
 clean:
 	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
 	@rm -rf ${EXT_DIR}
 	@rm -rf ${BIN_DIR}
-	@rm -rf ./dist
 
 ${BIN_DIR}:
 	@echo -e "$(ATTN_COLOR)==> $@ $(NO_COLOR)"
