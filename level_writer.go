@@ -11,10 +11,11 @@ type LevelWriter struct {
 	ErrorWriter io.Writer
 }
 
-func (lw *LevelWriter) WriteLevel(l zerolog.Level, p []byte) (n int, err error) {
+func (lw *LevelWriter) WriteLevel(l zerolog.Level, p []byte) (int, error) {
 	w := lw.Writer
 	if l > zerolog.InfoLevel {
 		w = lw.ErrorWriter
 	}
+
 	return w.Write(p)
 }

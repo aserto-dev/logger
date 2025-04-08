@@ -10,11 +10,13 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/pkgerrors" //nolint
+	"github.com/rs/zerolog/pkgerrors"
 )
 
-type ErrWriter io.Writer
-type Writer io.Writer
+type (
+	ErrWriter io.Writer
+	Writer    io.Writer
+)
 
 var once = &sync.Once{}
 
@@ -30,6 +32,7 @@ type Config struct {
 // sets the appropriate value for `LogLevelParsed`.
 func (c *Config) ParseLogLevel(defaultLevel zerolog.Level) error {
 	var err error
+
 	if c.LogLevel == "" {
 		c.LogLevelParsed = defaultLevel
 		return nil
@@ -46,6 +49,7 @@ func (c *Config) ParseLogLevel(defaultLevel zerolog.Level) error {
 // NewLogger returns a new logger.
 func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.Logger, error) {
 	var logger zerolog.Logger
+
 	if cfg.Prod {
 		writer := &LevelWriter{
 			Writer:      logOutput,
@@ -60,7 +64,7 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 
 	once.Do(func() {
 		zerolog.SetGlobalLevel(cfg.LogLevelParsed)
-		zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+		zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack //nolint:reassign
 
 		// Override standard log output with zerolog.
 		stdLogger := logger.With().Str("log-source", "std").Logger()
@@ -68,6 +72,7 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 
 		// Override GRPC logging with zerolog.
 		grpcLevel := zerolog.WarnLevel
+
 		if cfg.GrpcLogLevel != "" {
 			if level, err := zerolog.ParseLevel(cfg.GrpcLogLevel); err == nil {
 				grpcLevel = level
@@ -76,6 +81,7 @@ func NewLogger(logOutput Writer, errorOutput ErrWriter, cfg *Config) (*zerolog.L
 
 		SetGRPCLogger(&logger, grpcLevel)
 
+		//nolint:reassign
 		zerolog.ErrorHandler = func(err error) {
 			if !strings.Contains(err.Error(), "file already closed") {
 				fmt.Fprintf(os.Stderr, "zerolog: could not write event: %v\n", err)

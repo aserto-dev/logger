@@ -24,7 +24,7 @@ func NewZerologWriterWithLevel(logger *zerolog.Logger, level zerolog.Level) *Zer
 	return &ZerologWriter{logger: logger, level: level}
 }
 
-func (z *ZerologWriter) Write(p []byte) (n int, err error) {
+func (z *ZerologWriter) Write(p []byte) (int, error) {
 	msg := string(p)
 
 	stdLocker.Lock()
@@ -44,6 +44,7 @@ func (z *ZerologWriter) Write(p []byte) (n int, err error) {
 	default:
 		z.logger.Info().Msg(msg)
 	}
+
 	return len(p), nil
 }
 
